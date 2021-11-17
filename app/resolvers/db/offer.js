@@ -1,11 +1,6 @@
-import * as util from 'util';
-import * as stream from 'stream';
-const path = require('path')
 import client from '../../db';
 import { coordinateQueries, coordinateMutations } from './coordinate'
 const offerTable = 'offer'
-
-const finished = util.promisify(stream.finished); 
 
 
 const offerQueries = {
@@ -13,10 +8,9 @@ const offerQueries = {
   // default resolvers's inputs are : (parent, args, context, info) => ...
   // cf: https://www.apollographql.com/docs/apollo-server/data/resolvers/
   offers: async (_, args) => {
-
     let query = {}
     if(args){
-    if (args.length<0) {
+    if (args.user_account_id) {
 
       const keys = Object.keys(args);
       // get value from offer to put inside offerTable's columns
@@ -28,6 +22,7 @@ const offerQueries = {
         text:  `SELECT * FROM ${offerTable} WHERE ${WhereArgsformat}`,
         values,
       };
+      
     }else{
       query = {
         text:  `SELECT * FROM ${offerTable}`
@@ -67,23 +62,6 @@ const offerQueries = {
 };
 
 const offerMutations = {
-  singleUpload: async (parent, { file }) => {
-    const { createReadStream, filename, mimetype, encoding } = await file;
-
-    // Invoking the `createReadStream` will return a Readable Stream.
-    // See https://nodejs.org/api/stream.html#stream_readable_streams
-    const stream = createReadStream();
-
-    // This is purely for demonstration purposes and will overwrite the
-    // local-file-output.txt in the current working directory on EACH upload.
-    const newFilename = Date.now() + path.extname(filename)
-    const fullPath = path.join('images' , newFilename)
-    const out = require('fs').createWriteStream(fullPath);
-    stream.pipe(out);
-    await finished(out);
-    console.log({ filename: newFilename, mimetype, encoding, fullPath })
-    return { filename: newFilename, mimetype, encoding, fullPath };
-  },
   createOffer: async (_, args) => {
     const coordinateInput = {...args.coordinate}
 
