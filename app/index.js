@@ -21,18 +21,12 @@ const AWS_BUCKETNAME = process.env.AWS_BUCKETNAME;
 (async () => {
   
   const app = express();
-  app.use(cors());
+  app.options('*', cors())
   app.use(cookieParser())
 
   app.get('/', (req, res) => {
     res.send('welcome on graphql server');
   });
-
-  const encode = (data) => {
-    let buf = Buffer.from(data);
-    let base64 = buf.toString('base64');
-    return base64
-    }
 
   app.get("/images/:imageId", function(req, res, next) {
     console.log(req.params.imageId)
@@ -42,11 +36,7 @@ const AWS_BUCKETNAME = process.env.AWS_BUCKETNAME;
       return data
     }
     getS3().then((img) => {
-        let image="<img src='data:image/jpeg;base64," + encode(img.Body) + "'" + "/>";
-        let startHTML="<html><body></body>";
-        let endHTML="</body></html>";
-        let html=startHTML + image + endHTML;
-        res.send(html)
+        res.send(img.Body)
       }).catch((e)=>{
         res.send(e)
       })
